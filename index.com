@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentasi: Sistem Sampah Cerdas</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #ffffff; color: #1e293b; margin: 0; padding: 0;">
+
+    <header style="text-align: center; padding: 60px 20px; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 300;">🗑️ Sistem Sampah Cerdas</h1>
+        <p style="margin-top: 10px; font-size: 1rem; color: #64748b;">Klasifikasi Otomatis Sampah Berbasis Kelembapan dan Jarak</p>
+    </header>
+
+    <div style="max-width: 800px; margin: 50px auto; padding: 0 20px;">
+
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #0ea5e9; font-size: 1.5rem; border-bottom: 1px solid #0ea5e9; padding-bottom: 10px; margin-bottom: 25px; font-weight: 400;">Kode Sumber Arduino (C++)</h2>
+            <div style="background-color: #f1f5f9; padding: 18px; border-radius: 6px; overflow-x: auto; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
+                <pre id="arduino-code" style="margin: 0; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; line-height: 1.6; color: #1e293b;">
+#include &lt;Servo.h&gt;
+
+Servo servo1;
+
+const int trigPin = 8;
+const int echoPin = 9;
+
+// ... (Variable Declarations)
+int maxDryValue=30; // Ambang batas 30% kelembapan
+int Ultra_Distance=15; // Jarak pemicu 15 cm
+
+// Nilai kalibrasi sensor kelembapan
+int wetValue = 485;
+int dryValue = 1023;
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  servo1.attach(7);
+  servo1.write(90);
+  // ... (Serial Setup Messages)
+}
+
+void loop()
+{
+  int soil_raw_sum = 0;
+  distance = 0;
+
+  // 1. Pembacaan Jarak (Ultrasonik) - Rata-rata 2 kali
+  for(int i=0;i<2;i++)
+  {
+    // ... (Ultrasonic sensor reading logic)
+    duration = pulseIn(echoPin, HIGH);
+    distance= duration*0.034/2+distance;
+    delay(10);
+  }
+  distance=distance/2;
+
+  // 2. Deteksi dan Klasifikasi
+  if (distance < Ultra_Distance && distance > 1)
+  {
+    delay(500); 
+    
+    // Pembacaan Kelembapan - Rata-rata 3 kali
+    for(int i=0;i<3;i++)
+    {
+      soil_raw_sum += analogRead(potPin);
+      delay(75);
+    }
+    int soil_raw = soil_raw_sum / 3;
+
+    // Konversi ADC ke Persentase Kelembapan (0-100%)
+    fsoil = constrain(soil_raw, wetValue, dryValue);
+    fsoil = map(fsoil, wetValue, dryValue, 100, 0);
+
+    // 3. Logika Servo
+    if(fsoil > maxDryValue)
+    {
+      Serial.println("BASAH");
+      servo1.write(10); // Servo ke Kiri
+      delay(3000);
+    }
+    else
+    {
+      Serial.println("KERING");
+      servo1.write(170); // Servo ke Kanan
+      delay(3000);
+    }
+
+    servo1.write(90); // Kembali ke posisi Tengah
+  }
+  // ... (Reset variables and delay)
+  delay(500);
+}
+                </pre>
+                <button onclick="copyCode()" style="background-color: #0ea5e9; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; font-size: 0.9rem; transition: background-color 0.2s; outline: none;">
+                    Salin Kode
+                </button>
+            </div>
+        </section>
+        
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 40px 0;">
+
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #ef4444; font-size: 1.5rem; border-bottom: 1px solid #ef4444; padding-bottom: 10px; margin-bottom: 25px; font-weight: 400;">Komponen dan Pinout</h2>
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                <thead style="background-color: #f8fafc; color: #1e293b;">
+                    <tr>
+                        <th style="padding: 12px; border: 1px solid #e2e8f0;">Komponen</th>
+                        <th style="padding: 12px; border: 1px solid #e2e8f0;">Pin Arduino</th>
+                        <th style="padding: 12px; border: 1px solid #e2e8f0;">Fungsi Utama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background-color: #ffffff;">
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">Sensor Ultrasonik (HC-SR04)</td>
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">D8 (trig), D9 (echo)</td>
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">Memicu sistem klasifikasi saat objek terdeteksi.</td>
+                    </tr>
+                    <tr style="background-color: #f8fafc;">
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">Sensor Kelembapan</td>
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">A0 (potPin)</td>
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">Mengukur kandungan air/kelembapan sampah (basah/kering).</td>
+                    </tr>
+                    <tr style="background-color: #ffffff;">
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">Motor Servo</td>
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">D7</td>
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">Menggerakkan penutup atau pemisah ke bin yang sesuai.</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+        </section>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 40px 0;">
+
+        <section style="margin-bottom: 40px;">
+            <h2 style="color: #10b981; font-size: 1.5rem; border-bottom: 1px solid #10b981; padding-bottom: 10px; margin-bottom: 25px; font-weight: 400;">Penjelasan Logika</h2>
+
+            <h3 style="color: #64748b; font-size: 1.2rem; margin-top: 25px; font-weight: 500;">Kalibrasi Kunci</h3>
+            <ul style="list-style-type: none; padding-left: 0; line-height: 1.8;">
+                <li style="border-left: 3px solid #64748b; padding-left: 10px; margin-bottom: 5px;">`wetValue` (485) dan `dryValue` (1023): Batas ADC untuk Basah Penuh dan Kering Penuh.</li>
+                <li style="border-left: 3px solid #64748b; padding-left: 10px; margin-bottom: 5px;">`maxDryValue` (30%): Jika kelembapan **di atas 30%**, sampah dikategorikan sebagai **BASAH**.</li>
+                <li style="border-left: 3px solid #64748b; padding-left: 10px;">`Ultra_Distance` (15 cm): Jarak maksimum untuk memicu pembacaan sensor kelembapan.</li>
+            </ul>
+
+            <h3 style="color: #64748b; font-size: 1.2rem; margin-top: 30px; font-weight: 500;">Alur Kerja Utama di `loop()`</h3>
+            <ol style="padding-left: 20px; line-height: 1.8;">
+                <li>Deteksi Sampah: Sistem melakukan rata-rata 2x pembacaan ultrasonik.</li>
+                <li>Pemicu: Jika sampah berada dalam jarak 15 cm, pembacaan kelembapan dimulai (dirata-rata 3x untuk stabilitas).</li>
+                <li>Konversi: Nilai ADC mentah dikonversi menjadi persentase 0-100% menggunakan fungsi `constrain` dan `map`.</li>
+                <li>Klasifikasi:
+                    <ul style="list-style-type: circle; padding-left: 20px; margin-top: 5px; line-height: 1.6;">
+                        <li>Kelembapan > 30% $\rightarrow$ **BASAH** (Servo ke 10°).</li>
+                        <li>Kelembapan $\leq$ 30% $\rightarrow$ **KERING** (Servo ke 170°).</li>
+                    </ul>
+                </li>
+                <li>Reset: Setelah jeda 3 detik, servo kembali ke posisi tengah (90°) untuk menunggu sampah berikutnya.</li>
+            </ol>
+        </section>
+
+    </div>
+
+    <footer style="text-align: center; padding: 30px; color: #94a3b8; font-size: 0.8rem; margin-top: 50px;">
+        <p>Dokumentasi Proyek | Minimalis dan Informatif.</p>
+    </footer>
+
+    <script>
+        // Animasi Sederhana Header (Minimalis)
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const header = document.querySelector('header');
+            header.style.opacity = '0';
+            setTimeout(() => {
+                header.style.transition = 'opacity 0.6s ease-out';
+                header.style.opacity = '1';
+            }, 100);
+        });
+
+        // Fungsi untuk Menyalin Kode
+        function copyCode() {
+            const codeElement = document.getElementById('arduino-code');
+            const codeText = codeElement.textContent || codeElement.innerText;
+            
+            navigator.clipboard.writeText(codeText).then(() => {
+                alert("Kode Arduino berhasil disalin!");
+            }).catch(err => {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = codeText;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                alert("Kode Arduino berhasil disalin! (Fallback)");
+            });
+        }
+    </script>
+</body>
+</html>
